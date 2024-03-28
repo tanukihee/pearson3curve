@@ -1,0 +1,22 @@
+[project]
+name = "pearson3curve"
+version = "0.7.0"
+description = "Pearson III curve fitting and plotting"
+authors = [{ name = "ListLee", email = "list.lee@outlook.com" }]
+dependencies = [
+    "numpy>=1.26.4",
+    "scipy>=1.12.0",
+    "matplotlib>=3.8.3",
+    "probscale>=0.2.5",
+]
+requires-python = ">=3.9"
+readme = "README.md"
+license = { text = "MIT" }
+
+[build-system]
+requires = ["pdm-backend"]
+build-backend = "pdm.backend"
+
+
+[tool.pdm]
+distribution = true
