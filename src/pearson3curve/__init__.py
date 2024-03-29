@@ -24,7 +24,7 @@ class DataSequence:
         """
 
         self._observed_data = observed_data
-        self._data = sorted(observed_data)[::-1]
+        self._data = sorted(observed_data, reverse=True)
         self._extreme_data: list[float] = []
         self._ordinary_data = self._data
         self._period_length = len(observed_data)
@@ -72,7 +72,7 @@ class DataSequence:
         *,
         extreme_num: int | None = None,
     ):
-        """Set the history data and the period length if needed.
+        """Set the history data and the survey period length if needed.
 
         Parameters
         ----------
@@ -88,8 +88,8 @@ class DataSequence:
         ValueError
             * If the period length is less than the sum of the lengths of the
             observed data and the history data.
-            * If the number of extreme data is less than the length of the history
-            data.
+            * If the number of extreme data is less than the length of the
+            history data.
         """
 
         if period_length < len(self._observed_data) + len(history_data):
@@ -108,6 +108,35 @@ lengths of the observed data and the history data."
 of the history data."
             )
 
-        self._data = sorted(self._observed_data + history_data)[::-1]
+        self._data = sorted(self._observed_data + history_data, reverse=True)
         self._extreme_data = self._data[:extreme_num]
         self._ordinary_data = self._data[extreme_num:]
+
+    @property
+    def empirical_prob(self) -> Sequence[float]:
+        """The empirical probability sequence."""
+        return list(self.extreme_prob) + list(self.ordinary_prob)
+
+    @property
+    def extreme_prob(self) -> Sequence[float]:
+        """The empirical probability sequence for the extreme data."""
+        if (l := len(self.extreme_data)) == 0:
+            return []
+
+        return [
+            (i + 1) / (self._period_length + 1)
+            for i in range(self._period_length)
+            if i < l
+        ]
+
+    @property
+    def ordinary_prob(self) -> Sequence[float]:
+        """The empirical probability sequence for the ordinary data."""
+        if len(self.extreme_data) == 0:
+            return [
+                (i + 1) / (self._period_length + 1) for i in range(self._period_length)
+            ]
+
+        ep = self.extreme_prob[-1]
+        lo = len(self.ordinary_data)
+        return [ep + (1 - ep) * (i + 1) / (lo + 1) for i in range(lo)]
