@@ -29,39 +29,23 @@ class DataSequence:
         self._ordinary_data = self._data
         self._period_length = len(observed_data)
 
+        self._empirical_prob: list[float] | None = None
+
     @property
     def data(self) -> Sequence[float]:
-        """The sorted data sequence.
-
-        Returns
-        -------
-        Sequence[float]
-            The ordinary data sequence.
-        """
+        """The sorted data sequence."""
 
         return self._data
 
     @property
     def extreme_data(self) -> Sequence[float]:
-        """The sorted ordinary data sequence.
-
-        Returns
-        -------
-        Sequence[float]
-            The sorted ordinary data sequence.
-        """
+        """The sorted ordinary data sequence."""
 
         return self._extreme_data
 
     @property
     def ordinary_data(self) -> Sequence[float]:
-        """The sorted ordinary data sequence.
-
-        Returns
-        -------
-        Sequence[float]
-            The sorted ordinary data sequence.
-        """
+        """The sorted ordinary data sequence."""
 
         return self._ordinary_data
 
@@ -115,11 +99,17 @@ of the history data."
     @property
     def empirical_prob(self) -> Sequence[float]:
         """The empirical probability sequence."""
+        if self._empirical_prob is not None:
+            return self._empirical_prob
+
         return list(self.extreme_prob) + list(self.ordinary_prob)
 
     @property
     def extreme_prob(self) -> Sequence[float]:
         """The empirical probability sequence for the extreme data."""
+        if self._empirical_prob is not None:
+            return self._empirical_prob[: len(self.extreme_data)]
+
         if (l := len(self.extreme_data)) == 0:
             return []
 
@@ -132,6 +122,9 @@ of the history data."
     @property
     def ordinary_prob(self) -> Sequence[float]:
         """The empirical probability sequence for the ordinary data."""
+        if self._empirical_prob is not None:
+            return self._empirical_prob[len(self.extreme_data) :]
+
         if len(self.extreme_data) == 0:
             return [
                 (i + 1) / (self._period_length + 1) for i in range(self._period_length)
@@ -140,3 +133,58 @@ of the history data."
         ep = self.extreme_prob[-1]
         lo = len(self.ordinary_data)
         return [ep + (1 - ep) * (i + 1) / (lo + 1) for i in range(lo)]
+
+    def set_empirical_prob(self, empirical_prob: list[float]) -> None:
+        """Set the full empirical probability sequence.
+
+        Parameters
+        ----------
+        empirical_prob : list[float]
+            The empirical probability sequence. The length should be the same as
+            the length of the data sequence.
+
+        Raises
+        ------
+        ValueError
+            If the length of the empirical probability sequence is not the same
+            as the length of the data sequence.
+        """
+
+        if len(empirical_prob) != len(self.data):
+            raise ValueError(
+                "The length of the empirical probability sequence should be \
+same as the survey period length."
+            )
+
+        self._empirical_prob = empirical_prob
+
+    def set_empirical_prob_by_order(
+        self, order: int, prob: float, *, start_value=1
+    ) -> None:
+        """Set the empirical probability by the order number of the data.
+
+        Parameters
+        ----------
+        order : int
+            The order number of the data, starting from `start_value`, which is
+            1 by default.
+        prob : float
+            The empirical probability to be set.
+        start_value : int, optional
+            The start number of the order, by default 1.
+
+        Raises
+        ------
+        IndexError
+            If the order number is out of the range of the data sequence.
+        """
+
+        if order < start_value or order > len(self.data) - 1 + start_value:
+            raise IndexError(
+                "The order number is out of the range of the data sequence."
+            )
+
+        ep = self.empirical_prob
+        self._empirical_prob = [
+            prob if i == order - start_value else ep[i] for i in range(len(ep))
+        ]
