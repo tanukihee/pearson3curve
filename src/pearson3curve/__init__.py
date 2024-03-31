@@ -49,6 +49,12 @@ class DataSequence:
 
         return self._ordinary_data
 
+    @property
+    def period_length(self) -> int:
+        """The survey period length for the data sequence."""
+
+        return self._period_length
+
     def set_history_data(
         self,
         history_data: list[float],
@@ -166,8 +172,9 @@ same as the survey period length."
         Parameters
         ----------
         order : int
-            The order number of the data, starting from `start_value`, which is
-            1 by default.
+            The order number of the data sequence, starting from `start_value`,
+            which is 1 by default. The data sequence is sorted in descending
+            order. Therefore, the first data is the largest one.
         prob : float
             The empirical probability to be set.
         start_value : int, optional
