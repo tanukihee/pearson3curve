@@ -57,6 +57,9 @@ def test_set_empirical_prob(ds: DataSequence) -> None:
     with pytest.raises(ValueError):
         ds.set_empirical_prob([0.1, 0.2])
 
+    with pytest.raises(ValueError):
+        ds.set_empirical_prob([0.1, 0.2, 2])
+
 
 def test_set_empirical_prob_by_no(ds: DataSequence) -> None:
     ds.set_empirical_prob_by_order(2, 0.4)
@@ -73,6 +76,9 @@ def test_set_empirical_prob_by_no(ds: DataSequence) -> None:
 
     with pytest.raises(IndexError):
         ds.set_empirical_prob_by_order(3, 0.4, start_value=0)
+
+    with pytest.raises(ValueError):
+        ds.set_empirical_prob_by_order(2, 2)
 
 
 def test_set_empirical_prob_by_no_with_history_data(ds: DataSequence) -> None:

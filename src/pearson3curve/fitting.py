@@ -2,10 +2,9 @@ import math
 import statistics
 
 from scipy import stats  # type: ignore
-from scipy.stats import pearson3  # type: ignore
 from scipy.optimize import curve_fit  # type: ignore
 
-from pearson3curve import DataSequence
+from pearson3curve import Curve, DataSequence
 
 
 def get_moments(sequence: DataSequence) -> tuple[float, float, float]:
@@ -100,19 +99,19 @@ def get_fitted_moments(
     else:
         m_ex, m_cv, m_cs = moments
 
-    def p3_curve(prob: float, ex: float, cv: float, cs: float) -> float:
-        return (pearson3.ppf(1 - prob, cs) * cv + 1) * ex
-
     if sv_ratio is None:
         if fit_ex:
             popt = curve_fit(
-                p3_curve, sequence.empirical_prob, sequence.data, p0=[m_ex, m_cv, m_cs]
+                lambda prob, ex, cv, cs: Curve(ex, cv, cs).get_value_from_prob(prob),
+                sequence.empirical_prob,
+                sequence.data,
+                p0=[m_ex, m_cv, m_cs],
             )[0]
 
             [ex, cv, cs] = popt
         else:
             popt = curve_fit(
-                lambda prob, cv, cs: p3_curve(prob, m_ex, cv, cs),
+                lambda prob, cv, cs: Curve(m_ex, cv, cs).get_value_from_prob(prob),
                 sequence.empirical_prob,
                 sequence.data,
                 p0=[m_cv, m_cs],
@@ -123,7 +122,9 @@ def get_fitted_moments(
     else:
         if fit_ex:
             popt = curve_fit(
-                lambda prob, ex, cv: p3_curve(prob, ex, cv, cv * sv_ratio),
+                lambda prob, ex, cv: Curve(ex, cv, cv * sv_ratio).get_value_from_prob(
+                    prob
+                ),
                 sequence.empirical_prob,
                 sequence.data,
                 p0=[m_ex, m_cv],
@@ -133,7 +134,9 @@ def get_fitted_moments(
             cs = cv * sv_ratio
         else:
             popt = curve_fit(
-                lambda prob, cv: p3_curve(prob, m_ex, cv, cv * sv_ratio),
+                lambda prob, cv: Curve(m_ex, cv, cv * sv_ratio).get_value_from_prob(
+                    prob
+                ),
                 sequence.empirical_prob,
                 sequence.data,
                 p0=[m_cv],

@@ -10,6 +10,8 @@ __VERSION__ = "0.7.0"
 
 from typing import Sequence
 
+from scipy.stats import pearson3  # type: ignore
+
 
 class DataSequence:
     """The class for the data sequence."""
@@ -147,19 +149,28 @@ of the history data."
         ----------
         empirical_prob : list[float]
             The empirical probability sequence. The length should be the same as
-            the length of the data sequence.
+            the length of the data sequence. And the values should be in the
+            range from 0 to 1.
 
         Raises
         ------
         ValueError
-            If the length of the empirical probability sequence is not the same
+            * If the length of the empirical probability sequence is not the same
             as the length of the data sequence.
+            * If any value in the empirical probability sequence is out of the
+            range from 0 to 1.
         """
 
         if len(empirical_prob) != len(self.data):
             raise ValueError(
                 "The length of the empirical probability sequence should be \
 same as the survey period length."
+            )
+
+        if any(p < 0 or p > 1 for p in empirical_prob):
+            raise ValueError(
+                "The values in the empirical probability sequence should be \
+in the range from 0 to 1."
             )
 
         self._empirical_prob = empirical_prob
@@ -176,7 +187,8 @@ same as the survey period length."
             which is 1 by default. The data sequence is sorted in descending
             order. Therefore, the first data is the largest one.
         prob : float
-            The empirical probability to be set.
+            The empirical probability to be set. It should be in the range from
+            0 to 1.
         start_value : int, optional
             The start number of the order, by default 1.
 
@@ -184,6 +196,9 @@ same as the survey period length."
         ------
         IndexError
             If the order number is out of the range of the data sequence.
+
+        ValueError
+            If the probability is out of the range from 0 to 1.
         """
 
         if order < start_value or order > len(self.data) - 1 + start_value:
@@ -191,7 +206,60 @@ same as the survey period length."
                 "The order number is out of the range of the data sequence."
             )
 
+        if prob < 0 or prob > 1:
+            raise ValueError("The probability should be in the range from 0 to 1.")
+
         ep = self.empirical_prob
         self._empirical_prob = [
             prob if i == order - start_value else ep[i] for i in range(len(ep))
         ]
+
+
+class Curve:
+    """The P-III distribution curve."""
+
+    def __init__(self, ex: float, cv: float, cs: float):
+        """Initialize the P-III distribution curve.
+
+        Parameters
+        ----------
+        ex : float
+            The mean of the distribution.
+        cv : float
+            The coefficient of variation of the distribution.
+        cs : float
+            The skewness of the distribution.
+        """
+        self.ex = ex
+        self.cv = cv
+        self.cs = cs
+
+    def get_value_from_prob(self, prob: float) -> float:
+        """Get the value from the probability.
+
+        Parameters
+        ----------
+        prob : float
+            The probability, from 0 to 1.
+
+        Returns
+        -------
+        float
+            The value. `nan` if the probability is out of the range from 0 to 1.
+        """
+        return (pearson3.ppf(1 - prob, self.cs) * self.cv + 1) * self.ex
+
+    def get_prob_from_value(self, value: float) -> float:
+        """Get the probability from the value.
+
+        Parameters
+        ----------
+        value : float
+            The value.
+
+        Returns
+        -------
+        float
+            The probability, from 0 to 1.
+        """
+        return 1 - pearson3.cdf((value / self.ex - 1) / self.cv, self.cs)
