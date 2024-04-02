@@ -1,6 +1,8 @@
-import math
-import statistics
+"""
+The curve fitting module
+"""
 
+import numpy as np
 from scipy import stats  # type: ignore
 from scipy.optimize import curve_fit  # type: ignore
 
@@ -23,7 +25,7 @@ def get_moments(sequence: DataSequence) -> tuple[float, float, float]:
     """
 
     if len(sequence.extreme_data) == 0:
-        mean = statistics.mean(sequence.data)
+        mean = np.mean(sequence.data)
         variance: float = stats.variation(sequence.data, ddof=1)
         skewness: float = stats.skew(sequence.data, bias=False)
     else:
@@ -32,32 +34,26 @@ def get_moments(sequence: DataSequence) -> tuple[float, float, float]:
         )
 
         mean = (
-            sum(sequence.extreme_data) + r * sum(sequence.ordinary_data)
+            np.sum(sequence.extreme_data) + r * np.sum(sequence.ordinary_data)
         ) / sequence.period_length
 
         variance = (
-            math.sqrt(
-                (
-                    sum((x - mean) ** 2 for x in sequence.extreme_data)
-                    + r * sum((x - mean) ** 2 for x in sequence.ordinary_data)
-                )
+            np.sqrt(
+                np.sum((sequence.extreme_data - mean) ** 2)
+                + r
+                * np.sum((sequence.ordinary_data - mean) ** 2)
                 / (sequence.period_length - 1)
             )
             / mean
         )
 
-        skewness = (
-            sequence.period_length
-            * (
-                sum((x - mean) ** 3 for x in sequence.extreme_data)
-                + r * sum((x - mean) ** 3 for x in sequence.ordinary_data)
-            )
-            / (
-                (sequence.period_length - 1)
-                * (sequence.period_length - 2)
-                * mean**3
-                * variance**3
-            )
+        skewness = sequence.period_length * np.sum(
+            (sequence.extreme_data - mean) ** 3
+        ) + r * np.sum((sequence.ordinary_data - mean) ** 3) / (
+            (sequence.period_length - 1)
+            * (sequence.period_length - 2)
+            * mean**3
+            * variance**3
         )
 
     return mean, variance, skewness

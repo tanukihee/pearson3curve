@@ -10,56 +10,86 @@ __VERSION__ = "0.7.0"
 
 from typing import Sequence
 
+import numpy as np
 from scipy.stats import pearson3  # type: ignore
 
 
 class DataSequence:
     """The class for the data sequence."""
 
-    def __init__(self, observed_data: list[float]) -> None:
+    def __init__(self, observed_data: list[float] | np.ndarray) -> None:
         """The constructor of the DataSequence class.
 
         Parameters
         ----------
-        observed_data : list[float]
-            The observed data sequence.
+        observed_data : list[float] | np.ndarray
+            The observed data sequence, supporting either a list or a numpy
+            array.
         """
 
-        self._observed_data = observed_data
-        self._data = sorted(observed_data, reverse=True)
-        self._extreme_data: list[float] = []
-        self._ordinary_data = self._data
+        if isinstance(observed_data, list):
+            self._observed_data = np.array(observed_data)
+        else:
+            self._observed_data = observed_data
+
+        self._data = np.sort(self._observed_data)[::-1]
+        self._extreme_data = np.array([])
+        self._ordinary_data = self._data.copy()
         self._period_length = len(observed_data)
 
-        self._empirical_prob: list[float] | None = None
+        self._empirical_prob: np.ndarray | None = None
 
     @property
-    def data(self) -> Sequence[float]:
-        """The sorted data sequence."""
+    def data(self) -> np.ndarray:
+        """The sorted data sequence.
+
+        Returns
+        -------
+        np.ndarray
+            The sorted data sequence.
+        """
 
         return self._data
 
     @property
-    def extreme_data(self) -> Sequence[float]:
-        """The sorted ordinary data sequence."""
+    def extreme_data(self) -> np.ndarray:
+        """The sorted ordinary data sequence.
+
+        Returns
+        -------
+        Sequence[float]
+            The sorted ordinary data sequence.
+        """
 
         return self._extreme_data
 
     @property
-    def ordinary_data(self) -> Sequence[float]:
-        """The sorted ordinary data sequence."""
+    def ordinary_data(self) -> np.ndarray:
+        """The sorted ordinary data sequence.
+
+        Returns
+        -------
+        np.ndarray
+            The sorted ordinary data sequence.
+        """
 
         return self._ordinary_data
 
     @property
     def period_length(self) -> int:
-        """The survey period length for the data sequence."""
+        """The survey period length for the data sequence.
+
+        Returns
+        -------
+        int
+            The survey period length for the data sequence.
+        """
 
         return self._period_length
 
     def set_history_data(
         self,
-        history_data: list[float],
+        history_data: list[float] | np.ndarray,
         period_length: int,
         *,
         extreme_num: int | None = None,
@@ -68,12 +98,14 @@ class DataSequence:
 
         Parameters
         ----------
-        history_data : list[float]
-            The history data sequence.
+        history_data : list[float] | np.ndarray
+            The history data sequence, supporting either a list or a numpy
+            array.
         period_length : int
             The survey period length.
         extreme_num : int | None, optional
-            The number of extreme data.
+            The number of extreme data, by default None. If `None`, all the
+            history data will be treated as extreme data.
 
         Raises
         ------
@@ -94,69 +126,71 @@ lengths of the observed data and the history data."
 
         if extreme_num is None:
             extreme_num = len(history_data)
-        elif extreme_num < len(history_data):
+
+        if extreme_num < len(history_data):
             raise ValueError(
                 "The number of extreme data should not be less than the length \
 of the history data."
             )
 
-        self._data = sorted(self._observed_data + history_data, reverse=True)
+        self._data = np.sort(np.concatenate([self._observed_data, history_data]))[::-1]
         self._extreme_data = self._data[:extreme_num]
         self._ordinary_data = self._data[extreme_num:]
 
     @property
-    def empirical_prob(self) -> Sequence[float]:
-        """The empirical probability sequence."""
-        if self._empirical_prob is not None:
-            return self._empirical_prob
+    def extreme_prob(self) -> np.ndarray:
+        """The empirical probability sequence for the extreme data.
 
-        return list(self.extreme_prob) + list(self.ordinary_prob)
+        Returns
+        -------
+        Sequence[float]
+            The empirical probability sequence for the extreme data.
+        """
 
-    @property
-    def extreme_prob(self) -> Sequence[float]:
-        """The empirical probability sequence for the extreme data."""
         if self._empirical_prob is not None:
             return self._empirical_prob[: len(self.extreme_data)]
 
         if (l := len(self.extreme_data)) == 0:
-            return []
+            return np.array([])
 
-        return [
-            (i + 1) / (self._period_length + 1)
-            for i in range(self._period_length)
-            if i < l
-        ]
+        return (np.arange(l) + 1) / (self._period_length + 1)
 
     @property
-    def ordinary_prob(self) -> Sequence[float]:
+    def ordinary_prob(self) -> np.ndarray:
         """The empirical probability sequence for the ordinary data."""
         if self._empirical_prob is not None:
             return self._empirical_prob[len(self.extreme_data) :]
 
         if len(self.extreme_data) == 0:
-            return [
-                (i + 1) / (self._period_length + 1) for i in range(self._period_length)
-            ]
+            return (np.arange(self._period_length) + 1) / (self._period_length + 1)
 
         ep = self.extreme_prob[-1]
         lo = len(self.ordinary_data)
-        return [ep + (1 - ep) * (i + 1) / (lo + 1) for i in range(lo)]
+        return ep + (1 - ep) * (np.arange(lo) + 1) / (lo + 1)
 
-    def set_empirical_prob(self, empirical_prob: list[float]) -> None:
+    @property
+    def empirical_prob(self) -> np.ndarray:
+        """The empirical probability sequence."""
+        if self._empirical_prob is not None:
+            return self._empirical_prob
+
+        return np.concatenate([self.extreme_prob, self.ordinary_prob])
+
+    def set_empirical_prob(self, empirical_prob: list[float] | np.ndarray) -> None:
         """Set the full empirical probability sequence.
 
         Parameters
         ----------
-        empirical_prob : list[float]
-            The empirical probability sequence. The length should be the same as
-            the length of the data sequence. And the values should be in the
-            range from 0 to 1.
+        empirical_prob : list[float] | np.ndarray
+            The empirical probability sequence, supporting either a list or a
+            numpy array. The length should be the same as the length of the data
+            sequence. And the values should be in the range from 0 to 1.
 
         Raises
         ------
         ValueError
-            * If the length of the empirical probability sequence is not the same
-            as the length of the data sequence.
+            * If the length of the empirical probability sequence is not the
+            same as the length of the data sequence.
             * If any value in the empirical probability sequence is out of the
             range from 0 to 1.
         """
@@ -169,11 +203,14 @@ same as the survey period length."
 
         if any(p < 0 or p > 1 for p in empirical_prob):
             raise ValueError(
-                "The values in the empirical probability sequence should be \
-in the range from 0 to 1."
+                "The values in the empirical probability sequence should be in \
+the range from 0 to 1."
             )
 
-        self._empirical_prob = empirical_prob
+        if isinstance(empirical_prob, list):
+            self._empirical_prob = np.array(empirical_prob)
+        else:
+            self._empirical_prob = empirical_prob
 
     def set_empirical_prob_by_order(
         self, order: int, prob: float, *, start_value=1
@@ -209,10 +246,10 @@ in the range from 0 to 1."
         if prob < 0 or prob > 1:
             raise ValueError("The probability should be in the range from 0 to 1.")
 
-        ep = self.empirical_prob
-        self._empirical_prob = [
-            prob if i == order - start_value else ep[i] for i in range(len(ep))
-        ]
+        ep = self.empirical_prob.copy()
+        self._empirical_prob = np.where(
+            np.arange(len(ep)) == order - start_value, prob, ep
+        )
 
 
 class Curve:
