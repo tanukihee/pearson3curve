@@ -6,92 +6,87 @@ import numpy as np
 from scipy import stats  # type: ignore
 from scipy.optimize import curve_fit  # type: ignore
 
-from pearson3curve import Curve, DataSequence
+from pearson3curve import Curve, Data
 
 
-def get_moments(sequence: DataSequence) -> tuple[float, float, float]:
+def get_moments(data: Data) -> tuple[float, float, float]:
     """Get the P-III distribution moments (mean, coefficient of variation, and
-    skewness) of the data sequence.
+    skewness) of the data.
 
     Parameters
     ----------
-    sequence : DataSequence
-        The data sequence.
+    data : Data
+        The P-III distributed data.
 
     Returns
     -------
     tuple[float, float, float]
-        The P-III moments (ex, cv, cs) of the data sequence.
+        The P-III moments (ex, cv, cs) of the data.
     """
 
-    if len(sequence.extreme_data) == 0:
-        mean = np.mean(sequence.data)
-        variance: float = stats.variation(sequence.data, ddof=1)
-        skewness: float = stats.skew(sequence.data, bias=False)
+    if len(data.extreme_data) == 0:
+        mean = np.mean(data.data)
+        variance: float = stats.variation(data.data, ddof=1)
+        skewness: float = stats.skew(data.data, bias=False)
     else:
-        r = (sequence.period_length - len(sequence.extreme_data)) / len(
-            sequence.ordinary_data
-        )
+        r = (data.period_length - len(data.extreme_data)) / len(data.ordinary_data)
 
         mean = (
-            np.sum(sequence.extreme_data) + r * np.sum(sequence.ordinary_data)
-        ) / sequence.period_length
+            np.sum(data.extreme_data) + r * np.sum(data.ordinary_data)
+        ) / data.period_length
 
         variance = (
             np.sqrt(
-                np.sum((sequence.extreme_data - mean) ** 2)
+                np.sum((data.extreme_data - mean) ** 2)
                 + r
-                * np.sum((sequence.ordinary_data - mean) ** 2)
-                / (sequence.period_length - 1)
+                * np.sum((data.ordinary_data - mean) ** 2)
+                / (data.period_length - 1)
             )
             / mean
         )
 
-        skewness = sequence.period_length * np.sum(
-            (sequence.extreme_data - mean) ** 3
-        ) + r * np.sum((sequence.ordinary_data - mean) ** 3) / (
-            (sequence.period_length - 1)
-            * (sequence.period_length - 2)
-            * mean**3
-            * variance**3
+        skewness = data.period_length * np.sum(
+            (data.extreme_data - mean) ** 3
+        ) + r * np.sum((data.ordinary_data - mean) ** 3) / (
+            (data.period_length - 1) * (data.period_length - 2) * mean**3 * variance**3
         )
 
     return mean, variance, skewness
 
 
 def get_fitted_moments(
-    sequence: DataSequence,
+    data: Data,
     *,
     sv_ratio: float | None = None,
     fit_ex=True,
     moments: tuple[float, float, float] | None = None,
 ) -> tuple[float, float, float]:
     """Get the fitted P-III distribution moments (mean, coefficient of
-    variation, and skewness) of the data sequence.
+    variation, and skewness) of the data.
 
     Parameters
     ----------
-    sequence : DataSequence
-        The data sequence.
+    data : Data
+        The P-III distributed data.
     sv_ratio : float | None, optional
         The skewness-to-variance ratio, by default `None`, which means the
-        variance and skewness are fitted separately. If set, the skewness will
-        be the product of the variance and the ratio.
+        variance and skewness will be fitted separately. If set, the skewness
+        will be the product of the variance and the ratio.
     fit_ex : bool, optional
         Whether to fit the mean, by default `True`. If `False`, the mean will
         not be fitted.
     moments : tuple[float, float, float] | None, optional
-        The moments (ex, cv, cs) of the data sequence. If `None`, the moments
-        will be calculated from the data sequence.
+        The moments (ex, cv, cs) of the data. If `None`, the moments will be
+        calculated from the data.
 
     Returns
     -------
     tuple[float, float, float]
-        The fitted P-III parameters (ex, cv, cs) of the data sequence.
+        The fitted P-III parameters (ex, cv, cs) of the data.
     """
 
     if moments is None:
-        m_ex, m_cv, m_cs = get_moments(sequence)
+        m_ex, m_cv, m_cs = get_moments(data)
     else:
         m_ex, m_cv, m_cs = moments
 
@@ -99,8 +94,8 @@ def get_fitted_moments(
         if fit_ex:
             popt = curve_fit(
                 lambda prob, ex, cv, cs: Curve(ex, cv, cs).get_value_from_prob(prob),
-                sequence.empirical_prob,
-                sequence.data,
+                data.empirical_prob,
+                data.data,
                 p0=[m_ex, m_cv, m_cs],
             )[0]
 
@@ -108,8 +103,8 @@ def get_fitted_moments(
         else:
             popt = curve_fit(
                 lambda prob, cv, cs: Curve(m_ex, cv, cs).get_value_from_prob(prob),
-                sequence.empirical_prob,
-                sequence.data,
+                data.empirical_prob,
+                data.data,
                 p0=[m_cv, m_cs],
             )[0]
 
@@ -121,8 +116,8 @@ def get_fitted_moments(
                 lambda prob, ex, cv: Curve(ex, cv, cv * sv_ratio).get_value_from_prob(
                     prob
                 ),
-                sequence.empirical_prob,
-                sequence.data,
+                data.empirical_prob,
+                data.data,
                 p0=[m_ex, m_cv],
             )[0]
 
@@ -133,8 +128,8 @@ def get_fitted_moments(
                 lambda prob, cv: Curve(m_ex, cv, cv * sv_ratio).get_value_from_prob(
                     prob
                 ),
-                sequence.empirical_prob,
-                sequence.data,
+                data.empirical_prob,
+                data.data,
                 p0=[m_cv],
             )[0]
 
