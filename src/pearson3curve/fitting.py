@@ -37,18 +37,27 @@ def get_moments(data: Data) -> tuple[float, float, float]:
 
         variance = (
             np.sqrt(
-                np.sum((data.extreme_data - mean) ** 2)
-                + r
-                * np.sum((data.ordinary_data - mean) ** 2)
+                (
+                    np.sum((data.extreme_data - mean) ** 2)
+                    + r * np.sum((data.ordinary_data - mean) ** 2)
+                )
                 / (data.period_length - 1)
             )
             / mean
         )
 
-        skewness = data.period_length * np.sum(
-            (data.extreme_data - mean) ** 3
-        ) + r * np.sum((data.ordinary_data - mean) ** 3) / (
-            (data.period_length - 1) * (data.period_length - 2) * mean**3 * variance**3
+        skewness = (
+            data.period_length
+            * (
+                np.sum((data.extreme_data - mean) ** 3)
+                + r * np.sum((data.ordinary_data - mean) ** 3)
+            )
+            / (
+                (data.period_length - 1)
+                * (data.period_length - 2)
+                * mean**3
+                * variance**3
+            )
         )
 
     return mean, variance, skewness
