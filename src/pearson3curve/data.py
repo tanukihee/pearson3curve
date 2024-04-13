@@ -81,7 +81,7 @@ class Data:
         period_length: int,
         *,
         extreme_num: int | None = None,
-    ):
+    ) -> None:
         """Set the history data and the survey period length.
 
         Parameters
