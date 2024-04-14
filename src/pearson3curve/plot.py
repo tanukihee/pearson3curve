@@ -11,7 +11,7 @@ from pearson3curve.curve import Curve
 from pearson3curve.data import Data  # type: ignore # pylint: disable=unused-import
 
 # Default parameters
-_xlim: list[float] = [0, 100]
+_xlim: list[float] = [1, 99]
 
 
 # Initialize the figure and axis
@@ -284,7 +284,8 @@ def save(file_name: str, *, transparent=True, dpi=300, **kwargs) -> None:
     transparent : bool, optional
         Whether to save the plot with a transparent background, by default True.
     dpi : int, optional
-        The resolution in dots per inch, by default 300.
+        The resolution in dots per inch, by default 300. This will be omitted if
+        saving to a vector format.
     **kwargs
         Additional keyword arguments to pass to the `matplotlib.pyplot.savefig`
     """
