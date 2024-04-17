@@ -82,7 +82,7 @@ def get_fitted_moments(
         variance and skewness will be fitted separately. If set, the skewness
         will be the product of the variance and the ratio.
     fit_ex : bool, optional
-        Whether to fit the mean, by default `True`. If `False`, the mean will
+        Whether to fit the mean, by default True. If `False`, the mean will
         not be fitted.
     moments : tuple[float, float, float] | None, optional
         The moments (ex, cv, cs) of the data. If `None`, the moments will be
@@ -91,7 +91,7 @@ def get_fitted_moments(
     Returns
     -------
     tuple[float, float, float]
-        The fitted P-III parameters (ex, cv, cs) of the data.
+        The fitted P-III moments (ex, cv, cs) of the data.
     """
 
     if moments is None:

@@ -1,6 +1,6 @@
 [project]
 name = "pearson3curve"
-version = "0.7.0"
+version = "1.0.0"
 description = "Pearson III curve fitting and plotting"
 authors = [{ name = "ListLee", email = "list.lee@outlook.com" }]
 dependencies = [

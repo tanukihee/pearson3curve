@@ -6,7 +6,7 @@ from scipy.stats import pearson3  # type: ignore
 class Curve:
     """The P-III distribution curve class."""
 
-    def __init__(self, ex: float, cv: float, cs: float):
+    def __init__(self, ex: float, cv: float, cs: float) -> None:
         """Initialize the P-III distribution curve from the moments.
 
         Parameters

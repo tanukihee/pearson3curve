@@ -8,7 +8,7 @@ def d() -> Data:
     return Data([1, 2, 3])
 
 
-def test_data_sequence(d: Data) -> None:
+def test_data(d: Data) -> None:
     assert d.data == pytest.approx([3, 2, 1])
 
 

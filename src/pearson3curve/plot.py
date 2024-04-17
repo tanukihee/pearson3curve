@@ -43,7 +43,7 @@ def set_figsize(width: float, height: float) -> None:
 
 
 def set_font(font: str) -> None:
-    """Set the font for text.
+    """Set the font for the plot.
 
     Parameters
     ----------
@@ -62,8 +62,8 @@ def set_title(title: str, **kwargs) -> None:
     title : str
         The title.
     **kwargs
-        Additional keyword arguments to pass to the
-        `matplotlib.axes.Axes.set_title`
+        Additional keyword arguments to be passed to the
+        `matplotlib.axes.Axes.set_title` method.
     """
 
     _ax.set_title(title, **kwargs)
@@ -79,8 +79,8 @@ def set_xlim(left: float, right: float, **kwargs) -> None:
     right : float
         The right limit.
     **kwargs
-        Additional keyword arguments to pass to the
-        `matplotlib.axes.Axes.set_xlim`
+        Additional keyword arguments to be passed to the
+        `matplotlib.axes.Axes.set_xlim` method.
     """
 
     _ax.set_xlim(left, right, **kwargs)
@@ -95,8 +95,8 @@ def set_xlabel(label: str, **kwargs) -> None:
     label : str
         The label.
     **kwargs
-        Additional keyword arguments to pass to the
-        `matplotlib.axes.Axes.set_xlabel`
+        Additional keyword arguments to be passed to the
+        `matplotlib.axes.Axes.set_xlabel` method.
     """
 
     _ax.set_xlabel(label, **kwargs)
@@ -110,8 +110,8 @@ def set_ylabel(label: str, **kwargs) -> None:
     label : str
         The label.
     **kwargs
-        Additional keyword arguments to pass to the
-        `matplotlib.axes.Axes.set_ylabel`
+        Additional keyword arguments to be passed to the
+        `matplotlib.axes.Axes.set_ylabel` method.
     """
 
     _ax.set_ylabel(label, **kwargs)
@@ -125,8 +125,8 @@ def grid(visible: bool, **kwargs) -> None:
     visible : bool
         Whether to show the grid.
     **kwargs
-        Additional keyword arguments to pass to the
-        `matplotlib.axes.Axes.grid`
+        Additional keyword arguments to be passed to the
+        `matplotlib.axes.Axes.grid` method.
     """
 
     _ax.grid(visible, **kwargs)
@@ -138,8 +138,8 @@ def legend(**kwargs) -> None:
     Parameters
     ----------
     **kwargs
-        Additional keyword arguments to pass to the
-        `matplotlib.axes.Axes.legend`
+        Additional keyword arguments to be passed to the
+        `matplotlib.axes.Axes.legend` method.
     """
 
     _ax.legend(**kwargs)
@@ -154,7 +154,7 @@ def scatter(
     ordinary_kwargs: dict[str, Any] | None = None,
     **kwargs,
 ) -> None:
-    """Plot the data as a scatter plot.
+    """Plot the scatter plot of the data.
 
     Parameters
     ----------
@@ -164,15 +164,17 @@ def scatter(
         The label for the extreme data, by default "Extreme data".
     ordinary_label : str, optional
         The label for the ordinary data, by default "Ordinary data".
-    extreme_kwargs : dict[str, Any]
-        Additional keyword arguments to pass to the `matplotlib.pyplot.scatter`
-        for plotting the extreme data scatter points.
-    ordinary_kwargs : dict[str, Any]
-        Additional keyword arguments to pass to the `matplotlib.pyplot.scatter`
-        for plotting the ordinary data scatter points.
+    extreme_kwargs : dict[str, Any] | None, optional
+        Additional keyword arguments to be passed to the
+        `matplotlib.pyplot.scatter` function for plotting the extreme data
+        scatter points, by default None.
+    ordinary_kwargs : dict[str, Any] | None, optional
+        Additional keyword arguments to be passed to the
+        `matplotlib.pyplot.scatter` function for plotting the ordinary data
+        scatter points, by default None.
     **kwargs
-        Additional keyword arguments to pass to the `matplotlib.pyplot.scatter`
-        for plotting the scatter points. If given, it will update both the
+        Additional keyword arguments to be passed to the
+        `matplotlib.pyplot.scatter` function. If given, it will update both the
         `extreme_kwargs` and `ordinary_kwargs`.
     """
 
@@ -230,19 +232,16 @@ def plot(
     curve : Curve
         The Pearson Type III distribution curve.
     label : str | None, optional
-        The label for the curve, by default None. This will be passed to the
-        `matplotlib.pyplot.plot`.
+        The label for the curve, by default None.
     color : str | None, optional
-        The color of the curve, by default None. This will be passed to the
-        `matplotlib.pyplot.plot`.
+        The color of the curve, by default None.
     linestyle : str | None, optional
-        The line style of the curve, by default None. This will be passed to
-        the `matplotlib.pyplot.plot`.
+        The line style of the curve, by default None.
     linewidth : float | None, optional
-        The line width of the curve, by default None. This will be passed to
-        the `matplotlib.pyplot.plot`.
+        The line width of the curve, by default None.
     **kwargs
-        Additional keyword arguments to pass to the `matplotlib.pyplot.plot`.
+        Additional keyword arguments to be passed to the
+        `matplotlib.pyplot.plot` function.
     """
 
     kwargs.update(
@@ -287,7 +286,8 @@ def save(file_name: str, *, transparent=True, dpi=300, **kwargs) -> None:
         The resolution in dots per inch, by default 300. This will be omitted if
         saving to a vector format.
     **kwargs
-        Additional keyword arguments to pass to the `matplotlib.pyplot.savefig`
+        Additional keyword arguments to be passed to the
+        `matplotlib.figure.Figure.savefig` method.
     """
 
     kwargs.update({"transparent": transparent, "dpi": dpi})

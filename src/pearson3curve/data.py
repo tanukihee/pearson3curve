@@ -185,8 +185,8 @@ of the history data."
         ----------
         empirical_prob : list[float] | np.ndarray
             The total empirical probabilities, supporting either a list or a
-            numpy array. The length should be the same as the length of the data
-            sequence. And the values should be in the range from 0 to 1.
+            numpy array. The length should be the same as the length of the
+            data. And the values should be in the range from 0 to 1.
 
         Raises
         ------
@@ -223,8 +223,8 @@ range from 0 to 1."
         ----------
         order : int
             The order number of the data, starting from `start_value`, which is
-            1 by default. The data sequence is sorted in descending order.
-            Therefore, the first data is the largest one.
+            1 by default. The data is sorted in descending order. Therefore, the
+            first data is the largest one.
         prob : float
             The empirical probability to be set. It should be in the range from
             0 to 1.
