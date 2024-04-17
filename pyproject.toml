@@ -1,6 +1,6 @@
 [project]
 name = "pearson3curve"
-version = "1.0.0"
+version = "1.0.0r"
 description = "Pearson III curve fitting and plotting"
 authors = [{ name = "ListLee", email = "list.lee@outlook.com" }]
 dependencies = [
@@ -12,6 +12,12 @@ dependencies = [
 requires-python = ">=3.9"
 readme = "README.md"
 license = { text = "MIT" }
+
+[project.urls]
+Homepage = "https://github.com/tanukihee/pearson3curve"
+Documentation = "https://github.com/tanukihee/pearson3curve/blob/main/docs/api.md"
+Repository = "https://github.com/tanukihee/pearson3curve.git"
+Issues = "https://github.com/tanukihee/pearson3curve/issues"
 
 [build-system]
 requires = ["pdm-backend"]
